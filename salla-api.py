@@ -8,6 +8,8 @@ load_dotenv()
 app = FastAPI()
 
 
+EXPECTED_API_KEY = os.getenv("SALLA_API_KEY")
+print(EXPECTED_API_KEY)
 
 # # تعريف نموذج البيانات المتوقع استقباله من سلة (الإصدار V1)
 # class SallaWebhookPayload(BaseModel):
@@ -18,16 +20,12 @@ app = FastAPI()
 
 
 
-
 @app.post("/new-order")
 async def receive_salla_webhook(
     request: Request,
     x_api_key_v2: str | None = Header(None, alias="x-api-key-v2")
 ):
     # 1. التحقق من مفتاح الأمان (API Key) المطابق لما وضُع في لوحة تحكم سلة
-    EXPECTED_API_KEY = os.getenv("SALLA_API_KEY")
-    print(EXPECTED_API_KEY)
-
     if not EXPECTED_API_KEY or not x_api_key_v2 or not hmac.compare_digest(x_api_key_v2, EXPECTED_API_KEY):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing API Key")
     
